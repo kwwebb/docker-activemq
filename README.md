@@ -1,5 +1,3 @@
-# docker-activemq
-
 docker-activemq
 ===============
 
