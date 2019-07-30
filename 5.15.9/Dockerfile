@@ -1,4 +1,4 @@
-FROM corretto-8-docker:8
+FROM amazoncorretto:8
 
 ENV ACTIVEMQ_VERSION 5.15.9
 ENV ACTIVEMQ apache-activemq-$ACTIVEMQ_VERSION
@@ -8,8 +8,8 @@ ENV SHA512_VAL=35cae4258e38e47f9f81e785f547afc457fc331d2177bfc2391277ce24123be11
 ENV ACTIVEMQ_HOME /opt/activemq
 
 RUN set -x && \
-    mkdir -p /opt && \
-    apk --update add --virtual build-dependencies curl && \
+    yum -y update && \
+    yum -y install tar gzip shadow-utils && \
     curl https://archive.apache.org/dist/activemq/$ACTIVEMQ_VERSION/$ACTIVEMQ-bin.tar.gz -o $ACTIVEMQ-bin.tar.gz
 
 # Validate checksum
@@ -21,11 +21,10 @@ RUN if [ "$SHA512_VAL" != "$(sha512sum $ACTIVEMQ-bin.tar.gz | awk '{print($1)}')
 
 RUN tar xzf $ACTIVEMQ-bin.tar.gz -C  /opt && \
     ln -s /opt/$ACTIVEMQ $ACTIVEMQ_HOME && \
-    addgroup -S activemq && adduser -S -H -G activemq -h $ACTIVEMQ_HOME activemq && \
+    useradd -r -c ActiveMQ -b $ACTIVEMQ_HOME -s /sbin/nologin activemq && \
     chown -R activemq:activemq /opt/$ACTIVEMQ && \
     chown -h activemq:activemq $ACTIVEMQ_HOME && \
-    apk del build-dependencies && \
-    rm -rf /var/cache/apk/*
+    rm -rf /var/cache/yum/*
 
 USER activemq
 
